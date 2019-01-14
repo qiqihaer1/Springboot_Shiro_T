@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="Springboot_Shiro_T:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="Springboot_Shiro_T-1.0-SNAPSHOT.war">
+      <element id="artifact" artifact-name="Springboot_Shiro_T:war exploded" />
+    </root>
+  </artifact>
+</component>
