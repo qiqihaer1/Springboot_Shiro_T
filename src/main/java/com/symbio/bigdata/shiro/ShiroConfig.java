@@ -1,5 +1,6 @@
 package com.symbio.bigdata.shiro;
 
+import at.pollux.thymeleaf.shiro.dialect.ShiroDialect;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -7,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 
@@ -19,7 +21,7 @@ public class ShiroConfig {
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
         //设置安全管理器
         shiroFilterFactoryBean.setSecurityManager(defaultWebSecurityManager);
-
+        System.out.println("shiroFilterFactoryBean");
         //添加shiro内置过滤器
         /*
          * anon:表示可以匿名使用。
@@ -32,22 +34,27 @@ public class ShiroConfig {
            ssl:表示安全的url请求，协议为https
            user:当登入操作时不做检查
          */
-        Map<String, String> fMap = new HashMap<String, String>();
-        //拦截页面
-        fMap.put("/one", "authc");
-        fMap.put("/two", "authc");
-
-
+        Map<String, String> fMap = new LinkedHashMap<>();
+        //拦截页面 ,key是指@RequestMapping("x)的x
+//        fMap.put("/login", "anon");
+        fMap.put("/login", "anon");
+        fMap.put("/toLogin", "anon");
+        fMap.put("/logout", "anon");
+        fMap.put("/test", "anon");
+//        fMap.put("/one", "authc");
+//        fMap.put("/one", "authc");
+//        fMap.put("/two", "authc");
         //拦截未授权
         fMap.put("/one", "perms[user:one]");
         fMap.put("/two", "perms[user:two]");
+        fMap.put("/*", "authc");
+
         //被拦截返回登录页面
         shiroFilterFactoryBean.setLoginUrl("/login");
         //授权拦截返回页面
         shiroFilterFactoryBean.setUnauthorizedUrl("/permission");
         shiroFilterFactoryBean.setFilterChainDefinitionMap(fMap);
         return shiroFilterFactoryBean;
-
     }
 
     @Bean(name="defaultWebSecurityManager")
@@ -65,4 +72,12 @@ public class ShiroConfig {
         return new UserRealm();
     }
 
+    /**
+     * 配置ShiroDialect,用于thymeleaf和shiro标签配合使用
+     * @return
+     */
+    @Bean
+    public ShiroDialect getShiroDialect(){
+        return new ShiroDialect();
+    }
 }

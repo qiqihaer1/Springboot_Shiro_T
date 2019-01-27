@@ -1,5 +1,8 @@
-<html>
+<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:shiro="http://www.w3.org/1999/xhtml">
 <body>
 <h2>Hello World!</h2>
+<div shiro:hasPermission="user:one"><a href="/one">进入one页面</a></div><br/>
+<div shiro:hasPermission="user:two"><a href="/two">进入two页面</a></div><br/>
+<a href="/logout">注销</a>
 </body>
 </html>

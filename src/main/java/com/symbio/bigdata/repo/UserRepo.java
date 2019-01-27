@@ -16,4 +16,10 @@ public class UserRepo {
         User user1 = jdbcTemplate.queryForObject(sql, new String[]{user.getName(), user.getPassword()}, new BeanPropertyRowMapper<User>(User.class));
         return user1;
     }
+
+    public User findUserByName(String name){
+        String sql = "select * from user where name=?";
+        User user1 = jdbcTemplate.queryForObject(sql, new String[]{name}, new BeanPropertyRowMapper<User>(User.class));
+        return user1;
+    }
 }
