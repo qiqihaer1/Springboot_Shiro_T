@@ -1,19 +1,61 @@
 package com.symbio.bigdata.shiro;
 
 import at.pollux.thymeleaf.shiro.dialect.ShiroDialect;
+import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 
 @Configuration
 public class ShiroConfig {
+    /**
+     * 密码校验规则HashedCredentialsMatcher
+     * 这个类是为了对密码进行编码的 ,
+     * 防止密码在数据库里明码保存 , 当然在登陆认证的时候 ,
+     * 这个类也负责对form里输入的密码进行编码
+     * 处理认证匹配处理器：如果自定义需要实现继承HashedCredentialsMatcher
+     */
+    @Bean("hashedCredentialsMatcher")
+    public HashedCredentialsMatcher hashedCredentialsMatcher() {
+        HashedCredentialsMatcher credentialsMatcher = new HashedCredentialsMatcher();
+        //指定加密方式为MD5
+        credentialsMatcher.setHashAlgorithmName("MD5");
+        //加密次数
+        credentialsMatcher.setHashIterations(1024);
+        credentialsMatcher.setStoredCredentialsHexEncoded(true);
+        return credentialsMatcher;
+    }
+
+
+    //创建Realm并加密返回
+    @Bean(name="userRealm")
+    public UserRealm getUserRealm(@Qualifier("hashedCredentialsMatcher") HashedCredentialsMatcher matcher){
+        UserRealm userRealm = new UserRealm();
+        userRealm.setAuthenticationCachingEnabled(false);//认证不缓存
+        userRealm.setCredentialsMatcher(matcher);//设置密码器进行加密
+        return userRealm;
+    }
+
+    //    //创建Realm，没有加密
+//    @Bean(name="userRealm")
+//    public UserRealm getUserRealm(){
+//        return new UserRealm();
+//    }
+
+    @Bean(name="defaultWebSecurityManager")
+    //创建DefaultWebSecurityManager
+    public DefaultWebSecurityManager getDefaultWebSecurityManager(@Qualifier("userRealm")UserRealm userRealm){
+        DefaultWebSecurityManager defaultWebSecurityManager = new DefaultWebSecurityManager();
+        defaultWebSecurityManager.setRealm(userRealm);
+        return defaultWebSecurityManager;
+
+    }
 
     //创建ShiroFilterFactoryBean
     @Bean(name="shiroFilterFactoryBean")
@@ -39,38 +81,25 @@ public class ShiroConfig {
 //        fMap.put("/login", "anon");
         fMap.put("/login", "anon");
         fMap.put("/toLogin", "anon");
+        fMap.put("/register", "anon");
+        fMap.put("/toRegister", "anon");
         fMap.put("/logout", "anon");
-        fMap.put("/test", "anon");
-//        fMap.put("/one", "authc");
+        fMap.put("/index", "authc");
+        fMap.put("/test", "authc");
 //        fMap.put("/one", "authc");
 //        fMap.put("/two", "authc");
         //拦截未授权
         fMap.put("/one", "perms[user:one]");
         fMap.put("/two", "perms[user:two]");
-        fMap.put("/*", "authc");
+        fMap.put("/**", "authc");
 
-        //被拦截返回登录页面
-        shiroFilterFactoryBean.setLoginUrl("/login");
-        //授权拦截返回页面
-        shiroFilterFactoryBean.setUnauthorizedUrl("/permission");
+        shiroFilterFactoryBean.setLoginUrl("/login"); //登录页面
+        shiroFilterFactoryBean.setUnauthorizedUrl("/permission");//授权拦截返回页面
+        shiroFilterFactoryBean.setSuccessUrl("/index");
         shiroFilterFactoryBean.setFilterChainDefinitionMap(fMap);
         return shiroFilterFactoryBean;
     }
 
-    @Bean(name="defaultWebSecurityManager")
-    //创建DefaultWebSecurityManager
-    public DefaultWebSecurityManager getDefaultWebSecurityManager(@Qualifier("userRealm")UserRealm userRealm){
-        DefaultWebSecurityManager defaultWebSecurityManager = new DefaultWebSecurityManager();
-        defaultWebSecurityManager.setRealm(userRealm);
-        return defaultWebSecurityManager;
-
-    }
-
-    //创建Realm
-    @Bean(name="userRealm")
-    public UserRealm getUserRealm(){
-        return new UserRealm();
-    }
 
     /**
      * 配置ShiroDialect,用于thymeleaf和shiro标签配合使用

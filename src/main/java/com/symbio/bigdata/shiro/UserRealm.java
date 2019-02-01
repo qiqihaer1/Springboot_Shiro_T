@@ -9,9 +9,11 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 
+import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -27,7 +29,7 @@ public class UserRealm extends AuthorizingRealm {
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection arg0) {
         // TODO Auto-generated method stub
-        System.out.println("授权");
+        System.out.println("进行授权");
         //获取当前登录用户,从SimpleAuthenticationInfo(x,y,z)来的x
         Subject subject = SecurityUtils.getSubject();
         User user = (User) subject.getPrincipal();
@@ -36,18 +38,17 @@ public class UserRealm extends AuthorizingRealm {
         }
 
         SimpleAuthorizationInfo simpleAuthorizationInfo = new SimpleAuthorizationInfo();
-        simpleAuthorizationInfo.addStringPermission(user.getPerms()); //给资源授权
+        simpleAuthorizationInfo.addStringPermission(user.getPerms()==null?"user:normal":user.getPerms()); //给资源授权
         return simpleAuthorizationInfo;
     }
 
-    //执行身份验证逻辑，就是addAcount(a,b,c)
+    //执行身份验证逻辑，通过subject.login(userToken)进入
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken arg0) throws AuthenticationException {
         // TODO Auto-generated method stub
         System.out.println("进行认证");
         //shiro判断逻辑,从subject.login(x)传来的x
         UsernamePasswordToken user = (UsernamePasswordToken) arg0;
-//        UsernamePasswordToken user = new UsernamePasswordToken("111","1111");//模拟登录用户名和密码
         try{
             User newUser = userService.findUserByName(user.getUsername());
             System.out.println("Realm中绑定的user："+newUser);
@@ -57,7 +58,11 @@ public class UserRealm extends AuthorizingRealm {
                 System.out.println("没有newUser");
                 return null;
             }
-            return new SimpleAuthenticationInfo(newUser, newUser.getPassword(), getName());
+            //盐值
+            ByteSource credentialsSalt = ByteSource.Util.bytes(newUser.getSalt());
+            //newUser即为 PrincipalCollection arg0
+            // 当需要加密时则传入credentialsSalt
+            return new SimpleAuthenticationInfo(newUser, newUser.getPassword(),credentialsSalt, getName());
         }catch (EmptyResultDataAccessException e){//jdbcTemplate.queryForObject报错
                 return null;
         }

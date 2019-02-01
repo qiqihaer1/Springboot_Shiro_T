@@ -6,14 +6,16 @@ public class User implements Serializable {
     private String name;
     private String password;
     private String perms;
+    private String salt;
 
     public User() {
     }
 
-    public User(String name, String password, String perms) {
+    public User(String name, String password, String perms, String salt) {
         this.name = name;
         this.password = password;
         this.perms = perms;
+        this.salt = salt;
     }
 
     public String getName() {
@@ -40,12 +42,21 @@ public class User implements Serializable {
         this.perms = perms;
     }
 
+    public String getSalt() {
+        return salt;
+    }
+
+    public void setSalt(String salt) {
+        this.salt = salt;
+    }
+
     @Override
     public String toString() {
         return "User{" +
                 "name='" + name + '\'' +
                 ", password='" + password + '\'' +
                 ", perms='" + perms + '\'' +
+                ", salt='" + salt + '\'' +
                 '}';
     }
 }

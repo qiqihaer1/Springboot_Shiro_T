@@ -12,6 +12,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class UserController {
@@ -19,17 +20,27 @@ public class UserController {
     private UserService userService;
 
     @RequestMapping("index")
-    public String why(){
+    public String getIndex(){
         return "index";
     }
 
     @RequestMapping("login")
-    public String login( ){
+    public String getLogin( ){
         return "login";
     }
 
+    @RequestMapping("permission")
+    public String getPermission( ){
+        return "permission";
+    }
+
+    @RequestMapping("register")
+    public String toRegister() {
+        return "register";
+    }
+
     @RequestMapping("logout")
-    public String logout( ){
+    public String getlogout( ){
         Subject subject = SecurityUtils.getSubject();//取出当前验证主体
         if (subject != null) {
             subject.logout();//不为空，执行一次logout的操作，将session全部清空
@@ -70,11 +81,29 @@ public class UserController {
 
     }
 
+    //shiro用户注册
+    @RequestMapping("/toRegister")
+    public String toRegister(@RequestParam("name") String name, @RequestParam("password") String password, Model model){
+        //register
+        boolean result = userService.getRegister(name,password);
+        //执行登录方法,用捕捉异常去判断是否登录成功
+        if(result){
+            model.addAttribute("msg","注册成功");
+            return "/login";
+        }else {
+            model.addAttribute("msg","该用户已存在");
+            return "/register";
+        }
+
+    }
+
     @RequestMapping("test")
     public String thymeleaf( Model model){
         model.addAttribute("name","thymeleaf is ok");
         return "test";
     }
+
+
 
 }
 
